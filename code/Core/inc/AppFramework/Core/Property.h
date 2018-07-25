@@ -51,7 +51,12 @@ public:
   virtual std::int32_t getInt32Property(const std::string &name) const final;
   virtual std::int64_t getInt64Property(const std::string &name) const final;
   virtual std::string getStringProperty(const std::string &name) const final;
-  virtual void removeProperty(const std::string &name) final;
+  virtual void removeBoolProperty(const std::string &name) final;
+  virtual void removeInt8Property(const std::string &name) final;
+  virtual void removeInt16Property(const std::string &name) final;
+  virtual void removeInt32Property(const std::string &name) final;
+  virtual void removeInt64Property(const std::string &name) final;
+  virtual void removeStringProperty(const std::string &name) final;
   void addPropertyListner(std::shared_ptr<Interface::InterfacePropertyEventHandler> sPtrHandler) {
     mVecPropertyListner.push_back(sPtrHandler);
   }
@@ -73,7 +78,6 @@ public:
   void notifyEvent(Interface::InterfacePropertyEventHandler::EventType event, const std::string &name) {
     mVecPropertyListner.remove_if([](const decltype(mVecPropertyListner)::reference ref) {
       return ref.use_count() == 0;
-      return true;
     });
     for (auto &&wHandler : mVecPropertyListner) {
       auto handler = wHandler.lock();
@@ -127,6 +131,20 @@ private:
       throw PropertyNotAdded(name, strType);
     }
     return it->second->getValue<NativeType>();
+  }
+  template <ValueType enumType>
+  void removeProperty(const std::string &name, const std::string &strType) {
+    auto &it = std::find_if(std::begin(mUMulMapProperty), std::end(mUMulMapProperty),
+                            [&](const decltype(mUMulMapProperty)::value_type &pair) {
+                              if (pair.first.compare(name) == 0 && pair.second->mType == enumType)
+                                return true;
+                              return false;
+                            });
+    if (it == std::end(mUMulMapProperty)) {
+      throw PropertyNotAdded(name, strType);
+    }
+    mUMulMapProperty.erase(it);
+    notifyRemove(name);
   }
 
 private:

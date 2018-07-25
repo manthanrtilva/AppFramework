@@ -45,7 +45,12 @@ public:
   virtual std::int32_t getInt32Property(const std::string &name) const = 0;
   virtual std::int64_t getInt64Property(const std::string &name) const = 0;
   virtual std::string getStringProperty(const std::string &name) const = 0;
-  virtual void removeProperty(const std::string &name) = 0;
+  virtual void removeBoolProperty(const std::string &name) = 0;
+  virtual void removeInt8Property(const std::string &name) = 0;
+  virtual void removeInt16Property(const std::string &name) = 0;
+  virtual void removeInt32Property(const std::string &name) = 0;
+  virtual void removeInt64Property(const std::string &name) = 0;
+  virtual void removeStringProperty(const std::string &name) = 0;
 };
 } // namespace Interface
 } // namespace AppFramework

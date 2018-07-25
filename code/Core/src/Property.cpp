@@ -69,6 +69,11 @@ std::int64_t Property::getInt64Property(const std::string &name) const {
 std::string Property::getStringProperty(const std::string &name) const {
   return getProperty<std::string, ValueType::STRING>(name, "std::string");
 }
-void Property::removeProperty(const std::string &name) {}
+void Property::removeBoolProperty(const std::string &name) { removeProperty<ValueType::BOOL>(name, "bool"); }
+void Property::removeInt8Property(const std::string &name) { removeProperty<ValueType::INT8>(name, "std::int8_t"); }
+void Property::removeInt16Property(const std::string &name) { removeProperty<ValueType::INT16>(name, "std::int16_t"); }
+void Property::removeInt32Property(const std::string &name) { removeProperty<ValueType::INT32>(name, "std::int32_t"); }
+void Property::removeInt64Property(const std::string &name) { removeProperty<ValueType::INT64>(name, "std::int64_t"); }
+void Property::removeStringProperty(const std::string &name) { removeProperty<ValueType::STRING>(name, "std::string"); }
 } // namespace Core
 } // namespace AppFramework
