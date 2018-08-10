@@ -6,13 +6,14 @@
 
 #include <cstdint>
 #include <string>
+#include <typeinfo>
 namespace AppFramework {
 namespace Interface {
 class InterfaceProperty;
 class InterfacePropertyEventHandler {
 public:
   enum EventType { ADDING, REMOVING, UPDATING };
-  virtual void onPropertyEvent(EventType type, const std::string &name,
+  virtual void onPropertyEvent(EventType type, const std::string &name, std::type_info info,
                                const InterfaceProperty &oProperty) = 0;
 };
 class InterfaceProperty {

@@ -7,13 +7,14 @@
 #define AppFramework_Core_PropertyException_h_
 
 #include <stdexcept>
+#include "AppFramework/Core/Exception.h"
 
 namespace AppFramework {
 namespace Core {
-class PropertyException : public std::runtime_error {
+class PropertyException : public Exception {
 public:
   explicit PropertyException(const std::string &msg)
-      : std::runtime_error(msg) {}
+      : Exception(msg) {}
 };
 class PropertyNotAdded : public PropertyException {
 public:
