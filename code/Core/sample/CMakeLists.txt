@@ -10,3 +10,7 @@ target_link_libraries(sample_socket Core)
 add_executable(sample_component Component.cpp)
 target_include_directories(sample_component PUBLIC ${Core_Inc_DIR})
 target_link_libraries(sample_component Core)
+
+add_executable(sample_commandline CommandLine.cpp)
+target_include_directories(sample_commandline PUBLIC ${Core_Inc_DIR})
+# target_link_libraries(sample_commandline)
