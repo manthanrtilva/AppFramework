@@ -4,7 +4,6 @@
 #include "AppFramework/Core/SocketException.h"
 
 using AppFramework::Core::Socket;
-
 TEST(SocketTest,ConstructorTest){
   try{
     auto sPtrSocket = Socket::create("sock1",1);
@@ -13,6 +12,7 @@ TEST(SocketTest,ConstructorTest){
     FAIL();
   }
 }
+#if 1
 TEST(SocketTest,NameDirectionDataTypeTest){
   try{
     auto sPtrSocket = Socket::create("sock1",1);
@@ -59,7 +59,7 @@ TEST(SocketTest,ConnectTest1){
   try{
     auto sPtrSocket1 = Socket::create("sock1",1,Socket::Direction::IN_DIRECTION);
     // auto sPtrSocket2 = Socket::create("sock2",2,Socket::Direction::OUT_DIRECTION);
-    sPtrSocket1->connect(nullptr);
+    sPtrSocket1->connect(std::weak_ptr<Socket>());
     FAIL();
   }
   catch(AppFramework::Core::SocketException& ex){
@@ -111,8 +111,7 @@ TEST(SocketTest,EventHandlerTest1){
     auto sPtrSocket2 = Socket::create("sock2",1,Socket::Direction::OUT_DIRECTION);
     class EventHandler : public Socket::EventHandler {
     public:
-      virtual void onEvent(EventType type, const std::shared_ptr<Socket> &pFrom, const std::shared_ptr<Socket> &pTo,
-                           std::uint8_t dataType, std::any pData) override final {
+      virtual void onEvent(EventType type, const std::weak_ptr<Socket>& wpFrom,  const std::weak_ptr<Socket>& wpTo, std::uint8_t dataType, std::any pData) override final {
                            }
                            EventType mType;
 
@@ -123,3 +122,4 @@ TEST(SocketTest,EventHandlerTest1){
     FAIL();
   }
 }
+#endif

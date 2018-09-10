@@ -12,6 +12,7 @@ namespace AppFramework {
 namespace Core {
 Component::Component(const std::string &name) : mStrName{name} {}
 void Component::setState(Component::State oState) {
+  std::cout << __LINE__ << ":" << __FUNC__ <<":"<<mState<<":"<<oState<< std::endl;
   switch (mState) {
     case State::INIT:
       switch (oState) {
@@ -32,8 +33,10 @@ void Component::setState(Component::State oState) {
       }
       break;
     case State::RUN:
+    std::cout << __FILE__ << ":" << __LINE__ << std::endl;
       switch (oState) {
         case State::STOP:
+        std::cout << __FILE__ << ":" << __LINE__ << std::endl;
           doStop();
           break;
       }
@@ -51,16 +54,38 @@ void Component::setState(Component::State oState) {
   }
 }
 void Component::doConfigure() {
-  doConfigureImpl();
   mState = State::CONFIGURE;
+  doConfigureImpl();
+}
+void Component::doStopImplWrap() {
+  try {
+    doRunImpl();
+  } catch (std::exception &ex) {
+    std::cout << "exception:" << ex.what() << std::endl;
+    mState = State::STOP;
+  } catch (...) {
+    std::cout << "unknown exception" << std::endl;
+    mState = State::STOP;
+  }
+  mState = State::STOP;
 }
 void Component::doRun() {
-  doRunImpl();
-  mState = State::RUN;
+  try {
+    mState = State::RUN;
+    mRunThread = std::thread(&Component::doStopImplWrap,this);
+  } catch (std::exception &ex) {
+    std::cout << "exception:" << ex.what() << std::endl;
+    mState = State::STOP;
+  } catch (...) {
+    std::cout << "unknown exception" << std::endl;
+    mState = State::STOP;
+  }
 }
 void Component::doStop() {
-  doStopImpl();
+std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   mState = State::STOP;
+  doStopImpl();
+  mRunThread.join();
 }
 
 } // namespace Core

@@ -14,6 +14,8 @@
 #include <typeinfo>
 #include <unordered_map>
 
+#include "AppFramework/Core/PropertyException.h"
+
 namespace AppFramework {
 namespace Core {
 class Property {
@@ -26,12 +28,14 @@ public:
   };
   Property();
   ~Property();
-  template <typename type> void addProperty(const std::string &name, const type &value);
   template <typename type> void setProperty(const std::string &name, const type &value);
   template <typename type> type getProperty(const std::string &name) const;
-  template <typename type> void removeProperty(const std::string &name);
   void addPropertyListner(std::shared_ptr<EventHandler> spHandler);
   void removePropertyListner(std::shared_ptr<EventHandler> spHandler);
+
+protected:
+  template <typename type> void addProperty(const std::string &name, const type &value);
+  template <typename type> void removeProperty(const std::string &name);
 
 private:
   template <typename type> void notifyEvent(EventHandler::EventType type, const std::string &name);

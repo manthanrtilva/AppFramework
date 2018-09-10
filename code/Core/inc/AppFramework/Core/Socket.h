@@ -8,6 +8,7 @@
 #define AppFramework_Core_Socket_h_
 
 #include "AppFramework/Core/DataFragment.h"
+#include "AppFramework/Core/SocketException.h"
 
 #include <any>
 #include <cstdint>
@@ -25,22 +26,21 @@ public:
   class EventHandler {
   public:
     enum EventType { CONNECT, DISCONNECT, RECIEVED, SENT };
-    virtual void onEvent(EventType type, const std::shared_ptr<Socket>& pFrom,  const std::shared_ptr<Socket>& pTo, std::uint8_t dataType, std::any pData) = 0;
+    virtual void onEvent(EventType type, const std::weak_ptr<Socket>& wpFrom,  const std::weak_ptr<Socket>& wpTo, std::uint8_t dataType, std::any pData) = 0;
   };
-  enum FlowDirection { IN_DIRECTION, OUT_DIRECTION, /*BI_DIRECTION,*/ UNKNOWN_DIRECTION };
+  enum FlowDirection { IN_DIRECTION, OUT_DIRECTION, UNKNOWN_DIRECTION };
   typedef FlowDirection Direction;
   Direction getDirection() const;
   ~Socket();
-  // void setDirection(const Direction &dir);
-  void connect(std::shared_ptr<Socket> sPtrSocket);
-  void disconnect(std::shared_ptr<Socket> sPtrSocket);
+  void connect(std::weak_ptr<Socket> wPtrSocket);
+  void disconnect(std::weak_ptr<Socket> wPtrSocket);
   void addListner(std::shared_ptr<EventHandler> sPtrHandler);
   void removeListner(std::shared_ptr<EventHandler> sPtrHandler);
   bool isConnected();
   template <typename T>
   void sendData(std::shared_ptr<DataFragment<T>> sPtrData);
   template <typename T>
-  void onDataEvent(EventHandler::EventType type, std::shared_ptr<Socket> sPtrTo,
+  void onDataEvent(EventHandler::EventType type, std::weak_ptr<Socket> sPtrTo,
                    std::shared_ptr<DataFragment<T>> sPtrData);
   std::string getName() const;
   std::uint8_t getDataType() const;
@@ -48,6 +48,7 @@ public:
                                         Direction dir = Direction::UNKNOWN_DIRECTION);
 
 private:
+  void disconnectAll();
   Socket(const std::string &name, std::uint8_t type, Direction dir)
       : mStrName{name}, mUIntDataType{type}, mFlowDirection{dir} {}
   std::string getDirectionString() const;
@@ -62,7 +63,6 @@ private:
 inline std::string Socket::getName() const { return mStrName; }
 inline std::uint8_t Socket::getDataType() const { return mUIntDataType;}
 inline Socket::Direction Socket::getDirection() const { return mFlowDirection; }
-// inline void Socket::setDirection(const Socket::Direction &dir) { mFlowDirection = dir; }
 inline std::string Socket::getDirectionString() const{
   switch (mFlowDirection) {
   case FlowDirection::IN_DIRECTION:
@@ -71,17 +71,15 @@ inline std::string Socket::getDirectionString() const{
   case FlowDirection::OUT_DIRECTION:
     return "OUT_DIRECTION";
     break;
-  // case FlowDirection::BI_DIRECTION:
-  //   return "BI_DIRECTION";
-  //   break;
   case FlowDirection::UNKNOWN_DIRECTION:
     return "UNKNOWN_DIRECTION";
     break;
   }
+  return "";
 }
 template <typename T>
 void Socket::sendData(std::shared_ptr<DataFragment<T>> sPtrData) {
-  if (getDirection() == FlowDirection::IN_DIRECTION) {
+  if (getDirection() == FlowDirection::OUT_DIRECTION) {
     if (isConnected()) {
       for (auto &&wPtrSocket : mListConnectedSocket) {
         if (wPtrSocket.expired() == false) {
@@ -96,25 +94,25 @@ void Socket::sendData(std::shared_ptr<DataFragment<T>> sPtrData) {
   }
 }
 template <typename T>
-void Socket::onDataEvent(EventHandler::EventType type, std::shared_ptr<Socket> sPtrTo,
+void Socket::onDataEvent(EventHandler::EventType type, std::weak_ptr<Socket> wPtrFrom,
                          std::shared_ptr<DataFragment<T>> sPtrData) {
   if (!mListEventHandler.empty()) {
     for (auto &wPtrEventHandler : mListEventHandler) {
       if (wPtrEventHandler.expired() == false) {
         auto sPtrEventHandler = wPtrEventHandler.lock();
-        sPtrEventHandler->onEvent(type,shared_from_this(),sPtrTo,mUIntDataType,std::any(sPtrData));
+        sPtrEventHandler->onEvent(type,wPtrFrom,shared_from_this(),mUIntDataType,std::any(sPtrData));
       }
     }
   }
 }
 template <>
-inline void Socket::onDataEvent<void>(EventHandler::EventType type, std::shared_ptr<Socket> sPtrTo,
+inline void Socket::onDataEvent<void>(EventHandler::EventType type, std::weak_ptr<Socket> wPtrFrom,
                          std::shared_ptr<DataFragment<void>> sPtrData) {
   if (!mListEventHandler.empty()) {
     for (auto &wPtrEventHandler : mListEventHandler) {
       if (wPtrEventHandler.expired() == false) {
         auto sPtrEventHandler = wPtrEventHandler.lock();
-        sPtrEventHandler->onEvent(type,shared_from_this(),sPtrTo,0,std::any());
+        sPtrEventHandler->onEvent(type,wPtrFrom,shared_from_this(),0,std::any());
       }
     }
   }

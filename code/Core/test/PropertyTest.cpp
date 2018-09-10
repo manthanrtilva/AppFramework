@@ -8,6 +8,35 @@
 #include "AppFramework/Core/PropertyException.h"
 
 using AppFramework::Core::Property;
+class MyProperty : public Property {
+public:
+  MyProperty(bool populated = true) {
+    if (populated) {
+      addProperty<bool>("bool", true);
+      addProperty<std::int8_t>("int8", 1);
+      addProperty<std::int16_t>("int16", 2);
+      addProperty<std::int32_t>("int32", 3);
+      addProperty<std::int64_t>("int64", 4);
+      addProperty<std::string>("string", "string");
+    }
+  }
+  template<typename TYPE>
+  void addProperty(const std::string& name,TYPE t){
+    Property::addProperty<TYPE>(name,t);
+  }
+  template<typename TYPE>
+  void removeProperty(const std::string& name){
+    Property::removeProperty<TYPE>(name);
+  }
+  void removeAll() {
+    removeProperty<bool>("bool");
+    removeProperty<std::int8_t>("int8");
+    removeProperty<std::int16_t>("int16");
+    removeProperty<std::int32_t>("int32");
+    removeProperty<std::int64_t>("int64");
+    removeProperty<std::string>("string");
+  }
+};
 TEST(PropertyTest, Constructor) {
   try {
     Property oProp;
@@ -19,13 +48,7 @@ TEST(PropertyTest, Constructor) {
 /// adding property
 TEST(PropertyTest, AddProperty) {
   try {
-    Property oProp;
-    oProp.addProperty<bool>("bool", true);
-    oProp.addProperty<std::int8_t>("int8", 1);
-    oProp.addProperty<std::int16_t>("int16", 2);
-    oProp.addProperty<std::int32_t>("int32", 3);
-    oProp.addProperty<std::int64_t>("int64", 4);
-    oProp.addProperty<std::string>("string", "string");
+    MyProperty oProp;
   } catch (...) {
     FAIL();
   }
@@ -34,9 +57,14 @@ TEST(PropertyTest, AddProperty) {
 /// adding duplicate property of same type
 TEST(PropertyTest, AddDuplicateProperty1) {
   try {
-    Property oProp;
-    oProp.addProperty<bool>("bool", true);
-    oProp.addProperty<bool>("bool", false);
+    class MyProperty : public Property {
+    public:
+      MyProperty() {
+        addProperty<bool>("bool", true);
+        addProperty<bool>("bool", false);
+      }
+    };
+    MyProperty oProp;
     FAIL();
   } catch (const AppFramework::Core::PropertyAlreadyAdded &ex) {
   } catch (...) {
@@ -47,9 +75,14 @@ TEST(PropertyTest, AddDuplicateProperty1) {
 /// adding duplicate property of different type
 TEST(PropertyTest, AddDuplicateProperty2) {
   try {
-    Property oProp;
-    oProp.addProperty<bool>("bool", true);
-    oProp.addProperty<std::int8_t>("bool", false);
+    class MyProperty : public Property {
+    public:
+      MyProperty() {
+        addProperty<bool>("bool", true);
+        addProperty<std::int8_t>("bool", false);
+      }
+    };
+    MyProperty oProp;
   } catch (...) {
     FAIL();
   }
@@ -58,13 +91,7 @@ TEST(PropertyTest, AddDuplicateProperty2) {
 /// add/set property
 TEST(PropertyTest, AddSetProperty) {
   try {
-    Property oProp;
-    oProp.addProperty<bool>("bool", true);
-    oProp.addProperty<std::int8_t>("int8", 1);
-    oProp.addProperty<std::int16_t>("int16", 2);
-    oProp.addProperty<std::int32_t>("int32", 3);
-    oProp.addProperty<std::int64_t>("int64", 4);
-    oProp.addProperty<std::string>("string", "string");
+    MyProperty oProp;
     oProp.setProperty<bool>("bool", false);
     oProp.setProperty<std::int8_t>("int8", 11);
     oProp.setProperty<std::int16_t>("int16", 21);
@@ -96,13 +123,40 @@ TEST(PropertyTest, SetProperty) {
 /// add/get property
 TEST(PropertyTest, AddGetProperty) {
   try {
-    Property oProp;
-    oProp.addProperty<bool>("bool", true);
-    oProp.addProperty<std::int8_t>("int8", 1);
-    oProp.addProperty<std::int16_t>("int16", 2);
-    oProp.addProperty<std::int32_t>("int32", 3);
-    oProp.addProperty<std::int64_t>("int64", 4);
-    oProp.addProperty<std::string>("string", "string");
+    MyProperty oProp;
+    EXPECT_EQ(oProp.getProperty<bool>("bool"), true);
+    EXPECT_EQ(oProp.getProperty<std::int8_t>("int8"), 1);
+    EXPECT_EQ(oProp.getProperty<std::int16_t>("int16"), 2);
+    EXPECT_EQ(oProp.getProperty<std::int32_t>("int32"), 3);
+    EXPECT_EQ(oProp.getProperty<std::int64_t>("int64"), 4);
+    EXPECT_EQ(oProp.getProperty<std::string>("string"), "string");
+    // oProp.setProperty<bool>("bool", false);
+    // oProp.setProperty<std::int8_t>("int8", 11);
+    // oProp.setProperty<std::int16_t>("int16", 21);
+    // oProp.setProperty<std::int32_t>("int32", 31);
+    // oProp.setProperty<std::int64_t>("int64", 41);
+    // oProp.setProperty<std::string>("string", "string1");
+    // EXPECT_EQ(oProp.getProperty<bool>("bool"), false);
+    // EXPECT_EQ(oProp.getProperty<std::int8_t>("int8"), 11);
+    // EXPECT_EQ(oProp.getProperty<std::int16_t>("int16"), 21);
+    // EXPECT_EQ(oProp.getProperty<std::int32_t>("int32"), 31);
+    // EXPECT_EQ(oProp.getProperty<std::int64_t>("int64"), 41);
+    // EXPECT_EQ(oProp.getProperty<std::string>("string"), "string1");
+  } catch (...) {
+    FAIL();
+  }
+}
+
+/// add/set/get property
+TEST(PropertyTest, AddSetGetProperty) {
+  try {
+    MyProperty oProp;
+    EXPECT_EQ(oProp.getProperty<bool>("bool"), true);
+    EXPECT_EQ(oProp.getProperty<std::int8_t>("int8"), 1);
+    EXPECT_EQ(oProp.getProperty<std::int16_t>("int16"), 2);
+    EXPECT_EQ(oProp.getProperty<std::int32_t>("int32"), 3);
+    EXPECT_EQ(oProp.getProperty<std::int64_t>("int64"), 4);
+    EXPECT_EQ(oProp.getProperty<std::string>("string"), "string");
     oProp.setProperty<bool>("bool", false);
     oProp.setProperty<std::int8_t>("int8", 11);
     oProp.setProperty<std::int16_t>("int16", 21);
@@ -120,27 +174,6 @@ TEST(PropertyTest, AddGetProperty) {
   }
 }
 
-/// add/set/get property
-TEST(PropertyTest, AddSetGetProperty) {
-  try {
-    Property oProp;
-    oProp.addProperty<bool>("bool", true);
-    oProp.addProperty<std::int8_t>("int8", 1);
-    oProp.addProperty<std::int16_t>("int16", 2);
-    oProp.addProperty<std::int32_t>("int32", 3);
-    oProp.addProperty<std::int64_t>("int64", 4);
-    oProp.addProperty<std::string>("string", "string");
-    EXPECT_EQ(oProp.getProperty<bool>("bool"), true);
-    EXPECT_EQ(oProp.getProperty<std::int8_t>("int8"), 1);
-    EXPECT_EQ(oProp.getProperty<std::int16_t>("int16"), 2);
-    EXPECT_EQ(oProp.getProperty<std::int32_t>("int32"), 3);
-    EXPECT_EQ(oProp.getProperty<std::int64_t>("int64"), 4);
-    EXPECT_EQ(oProp.getProperty<std::string>("string"), "string");
-  } catch (...) {
-    FAIL();
-  }
-}
-
 TEST(PropertyTest, PropertyEventHandler1) {
   try {
     class handler : public Property::EventHandler {
@@ -153,7 +186,7 @@ TEST(PropertyTest, PropertyEventHandler1) {
       std::map<int, int> eventCount;
     };
     auto spHandler = std::make_shared<handler>();
-    Property oProp;
+    MyProperty oProp(false);
     oProp.addPropertyListner(spHandler);
     oProp.addProperty<bool>("bool", true);
     oProp.addProperty<std::int8_t>("int8", 1);
@@ -169,12 +202,7 @@ TEST(PropertyTest, PropertyEventHandler1) {
     oProp.setProperty<std::int64_t>("int64", 41);
     oProp.setProperty<std::string>("string", "string1");
     EXPECT_EQ(spHandler->eventCount[handler::EventType::UPDATING], 6);
-    oProp.removeProperty<bool>("bool");
-    oProp.removeProperty<std::int8_t>("int8");
-    oProp.removeProperty<std::int16_t>("int16");
-    oProp.removeProperty<std::int32_t>("int32");
-    oProp.removeProperty<std::int64_t>("int64");
-    oProp.removeProperty<std::string>("string");
+    oProp.removeAll();
     EXPECT_EQ(spHandler->eventCount[handler::EventType::REMOVING], 6);
   } catch (...) {
     FAIL();
@@ -198,7 +226,7 @@ TEST(PropertyTest, PropertyEventHandler2) {
       std::string mTypeName;
     };
     auto spHandler = std::make_shared<handler>();
-    Property oProp;
+    MyProperty oProp(false);
     oProp.addPropertyListner(spHandler);
     oProp.addProperty<bool>("bool", true);
     EXPECT_EQ(spHandler->mType, handler::EventType::ADDING);
@@ -272,6 +300,9 @@ TEST(PropertyTest, PropertyEventHandler2) {
     EXPECT_EQ(spHandler->mType, handler::EventType::REMOVING);
     EXPECT_EQ(spHandler->mName, "string");
     EXPECT_EQ(spHandler->mTypeName, typeid(std::string).name());
+  } catch(std::exception& ex){
+    std::cout<<ex.what()<<std::endl;
+    FAIL();
   } catch (...) {
     FAIL();
   }

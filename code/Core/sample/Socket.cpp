@@ -14,10 +14,11 @@ int main(int argc, char **argv) {
     auto socket1 = Socket::create("a", 1, Socket::Direction::IN_DIRECTION);
     class EventHandler : public Socket::EventHandler {
     public:
-      virtual void onEvent(EventType type, const std::shared_ptr<Socket> &pFrom, const std::shared_ptr<Socket> &pTo,
-                           std::uint8_t dataType, std::any pData) override final {
+      virtual void onEvent(EventType type, const std::weak_ptr<Socket>& wpFrom,  const std::weak_ptr<Socket>& wpTo, std::uint8_t dataType, std::any pData) override final {
         std::cout << "----------------------------------------------------" << std::endl;
         std::cout << "type:" << type << std::endl;
+        auto pFrom = wpFrom.lock();
+        auto pTo = wpTo.lock();
         if (pFrom)
           std::cout << "pFrom.name:" << pFrom->getName() << std::endl;
         if (pTo)

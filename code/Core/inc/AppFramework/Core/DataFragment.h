@@ -16,10 +16,12 @@ template <typename T>
 class DataFragment : public std::enable_shared_from_this<DataFragment<T>>{
   DataFragment() {};
 public:
+  using element_type = T;
   static std::shared_ptr<DataFragment<T>> create();
   // DataFragment();
   // ~DataFragment();
   void updateData(T *pData);
+  void updateData(T oData);
   void updateData(std::shared_ptr<T> pData);
   std::shared_ptr<T> getData();
 
@@ -37,6 +39,11 @@ template <typename T>
 void DataFragment<T>::updateData(T *pData) {
   mSPtrData = std::shared_ptr<T>(pData);
   pData = nullptr;
+}
+template <typename T>
+void DataFragment<T>::updateData(T oData) {
+  mSPtrData = std::make_shared<T>(std::move(oData));
+  // pData = nullptr;
 }
 template <typename T>
 void DataFragment<T>::updateData(std::shared_ptr<T> pData) {

@@ -1,6 +1,5 @@
 
 
-
 add_executable(app src/Main.cpp)
-set(Core_Inc_DIR ${CMAKE_CURRENT_LIST_DIR}/inc)
-target_include_directories(Core PUBLIC ${Core_Inc_DIR})
+target_include_directories(app PUBLIC ${Core_Inc_DIR} ${JSONCPP_INC_DIR})
+target_link_libraries(app jsoncpp_lib_static Core)

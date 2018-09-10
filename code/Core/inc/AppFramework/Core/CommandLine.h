@@ -34,7 +34,7 @@ class CommandLine {
     const bool mBIsRequired;
     const bool mBHasDefault;
     bool mBIsHandled{false};
-    virtual void parse(const std::string& strValue) = 0;
+    virtual void parse(const std::string &strValue) = 0;
     virtual std::string print_value() const = 0;
   };
   template <typename T>
@@ -42,13 +42,16 @@ class CommandLine {
   public:
     ArgumentWithValue(const std::string &arg, const std::string &description, bool isRequired, bool hasDefault)
         : ArgBase(arg, description, true, isRequired, hasDefault) {
-          if(std::is_same<T,bool>::value){
-            mBHasValue = false;
-          }
-        }
+      if (std::is_same<T, bool>::value) {
+        mBHasValue = false;
+      }
+    }
     T oValue = T();
-    virtual void parse(const std::string& strValue) {
-      oValue = CommandLine::parse(strValue,oValue);
+    virtual void parse(const std::string &strValue) {
+      oValue = CommandLine::parse(strValue, oValue);
+      if (mOCallback) {
+        mOCallback(mStrArgName, oValue);
+      }
     }
     virtual std::string print_value() const override { return ""; }
     std::function<void(const std::string &arg, const T &value)> mOCallback;
@@ -63,43 +66,42 @@ public:
   }
   template <typename T>
   void addRequired(const std::string &name, const std::string &description) {
-      auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, true, false));
-      mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
+    auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, true, false));
+    mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
   }
   template <typename T>
   void addOptional(const std::string &name, const std::string &description) {
-      auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
-      mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
+    auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
+    mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
   }
   template <typename T>
-  void addDefault(const std::string &name, const std::string &description,const T& value) {
-      auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
-      arg->oValue = value;
-      mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
+  void addDefault(const std::string &name, const std::string &description, const T &value) {
+    auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
+    arg->oValue = value;
+    mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
   }
-  template<typename T>
-  T get(const std::string& name){
+  template <typename T>
+  T get(const std::string &name) {
     for (auto &base : mMapStrUPtrBase) {
       if (base.second->mStrArgName.compare(name) == 0) {
         auto cmd = dynamic_cast<ArgumentWithValue<T> *>(base.second.get());
         return cmd->oValue;
       }
     }
-    std::runtime_error("Invalid argument:"+name);
+    std::runtime_error("Invalid argument:" + name);
+    return T();
   }
   bool run() {
     for (std::size_t index = 0; index < mVecArgumnet.size(); ++index) {
       const auto &arg = mVecArgumnet[index];
       auto &cmdBase = mMapStrUPtrBase.find(arg);
       if (cmdBase != std::end(mMapStrUPtrBase)) {
-        if(!cmdBase->second->mBHasValue){
+        if (!cmdBase->second->mBHasValue) {
           cmdBase->second->parse("");
-        }
-        else {
+        } else {
           if (index + 1 >= mVecArgumnet.size() || mVecArgumnet[index + 1].compare(0, 1, "-") == 0) {
             throw std::runtime_error("Argument '" + cmdBase->second->mStrArgName + "' required value");
-          }
-          else {
+          } else {
             cmdBase->second->parse(mVecArgumnet[index + 1]);
             ++index;
           }
@@ -116,23 +118,13 @@ public:
     }
     return true;
   }
-
 private:
-  static int parse(const std::string& strValue,const int& value){
-    return std::stoi(strValue);
-  }
-  static double parse(const std::string& strValue,const double& value){
-    return std::stod(strValue);
-  }
-  static long double parse(const std::string& strValue,const long double& value){
-    return std::stold(strValue);
-  }
-  static float parse(const std::string& strValue,const float& value){
-    return std::stof(strValue);
-  }
-  static bool parse(const std::string& strValue,const bool& value){
-    return true;
-  }
+  static int parse(const std::string &strValue, const int &value) { return std::stoi(strValue); }
+  static std::string parse(const std::string &strValue, const std::string &value) { return strValue; }
+  static double parse(const std::string &strValue, const double &value) { return std::stod(strValue); }
+  static long double parse(const std::string &strValue, const long double &value) { return std::stold(strValue); }
+  static float parse(const std::string &strValue, const float &value) { return std::stof(strValue); }
+  static bool parse(const std::string &strValue, const bool &value) { return true; }
   void addHelp() {
     const auto &it = std::find_if(std::begin(mMapStrUPtrBase), std::end(mMapStrUPtrBase),
                                   [](decltype(mMapStrUPtrBase)::const_reference ref) {
@@ -141,8 +133,9 @@ private:
                                     return false;
                                   });
     if (it == std::end(mMapStrUPtrBase)) {
-      auto &arg = std::unique_ptr<ArgumentWithValue<bool>>(new ArgumentWithValue<bool>("h", "print this help", false, false));
-      arg->mOCallback = [this](const std::string &name,const bool &value) {
+      auto &arg =
+          std::unique_ptr<ArgumentWithValue<bool>>(new ArgumentWithValue<bool>("h", "print this help", false, false));
+      arg->mOCallback = [this](const std::string &name, const bool &value) {
         usage();
         std::exit(0);
       };
@@ -165,6 +158,7 @@ private:
       std::cout << std::endl;
     }
   }
+
 private:
   const std::string mStrAppName;
   std::vector<std::string> mVecArgumnet;

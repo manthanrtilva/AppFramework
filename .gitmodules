@@ -1,3 +1,6 @@
 [submodule "code/submodule/googletest"]
 	path = code/submodule/googletest
 	url = https://github.com/google/googletest.git
+[submodule "code/submodule/jsoncpp"]
+	path = code/submodule/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git

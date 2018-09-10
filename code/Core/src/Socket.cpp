@@ -12,24 +12,17 @@
 
 namespace AppFramework {
 namespace Core {
-std::shared_ptr<Socket> Socket::create(const std::string &name, std::uint8_t type,Direction dir) {
-  return std::shared_ptr<Socket>(new Socket(name, type,dir));
+std::shared_ptr<Socket> Socket::create(const std::string &name, std::uint8_t type, Direction dir) {
+  return std::shared_ptr<Socket>(new Socket(name, type, dir));
 }
-// Socket::Socket(const std::string &name) {}
-Socket::~Socket() {
-  for(auto& wPtrSocket : mListConnectedSocket) {
-    if(wPtrSocket.expired() == false){
-      auto sPtrSocket = wPtrSocket.lock();
-      disconnect(sPtrSocket);
-    }
-  }
-  mListConnectedSocket.clear();
-}
-void Socket::connect(std::shared_ptr<Socket> sPtrSocket) {
+Socket::~Socket() { disconnectAll(); }
+void Socket::connect(std::weak_ptr<Socket> wPtrSocket) {
+  std::cout<<getName()<<":"<<__FUNC__<<std::endl;
+  auto sPtrSocket = wPtrSocket.lock();
   if (sPtrSocket == nullptr) {
     throw NullSocket();
   }
-  if(mUIntDataType != sPtrSocket->getDataType()){
+  if (mUIntDataType != sPtrSocket->getDataType()) {
     throw SocketException("Mismatch in datatype of socket");
   }
   auto fromDir = getDirection();
@@ -47,11 +40,30 @@ void Socket::connect(std::shared_ptr<Socket> sPtrSocket) {
   if (it != std::end(mListConnectedSocket)) {
     throw SocketAlreadyConnected();
   }
-  mListConnectedSocket.push_back(sPtrSocket);
-  onDataEvent(EventHandler::EventType::CONNECT,sPtrSocket,std::shared_ptr<DataFragment<void>>());
-  sPtrSocket->onDataEvent<void>(EventHandler::EventType::CONNECT,shared_from_this(),std::shared_ptr<DataFragment<void>>(nullptr));
+  mListConnectedSocket.push_back(wPtrSocket);
+  std::cout<<getName()<<":"<<__FUNC__<<std::endl;
+  // onDataEvent(EventHandler::EventType::CONNECT, sPtrSocket, std::shared_ptr<DataFragment<void>>());
+  sPtrSocket->onDataEvent<void>(EventHandler::EventType::CONNECT, shared_from_this(),
+                                std::shared_ptr<DataFragment<void>>(nullptr));
 }
-void Socket::disconnect(std::shared_ptr<Socket> sPtrSocket) {
+void Socket::disconnectAll() {
+  for (auto &wPtrSocket : mListConnectedSocket) {
+    if (wPtrSocket.expired() == false) {
+      auto sPtrSocket = wPtrSocket.lock();
+      if (sPtrSocket) {
+        sPtrSocket->onDataEvent<void>(EventHandler::EventType::DISCONNECT, std::weak_ptr<Socket>(),
+                                      std::shared_ptr<DataFragment<void>>(nullptr));
+        onDataEvent(EventHandler::EventType::DISCONNECT, sPtrSocket, std::shared_ptr<DataFragment<void>>());
+      }
+    }
+  }
+  mListConnectedSocket.clear();
+}
+void Socket::disconnect(std::weak_ptr<Socket> wPtrSocket) {
+  auto sPtrSocket = wPtrSocket.lock();
+  if (sPtrSocket == nullptr) {
+    throw NullSocket();
+  }
   const auto &it = std::find_if(std::begin(mListConnectedSocket), std::end(mListConnectedSocket),
                                 [&sPtrSocket](const decltype(mListConnectedSocket)::const_reference ref) {
                                   if (ref.lock() == sPtrSocket)
@@ -61,8 +73,9 @@ void Socket::disconnect(std::shared_ptr<Socket> sPtrSocket) {
   if (it == std::end(mListConnectedSocket)) {
     throw SocketNotConnected();
   }
-  onDataEvent(EventHandler::EventType::DISCONNECT,sPtrSocket,std::shared_ptr<DataFragment<void>>());
-  sPtrSocket->onDataEvent<void>(EventHandler::EventType::DISCONNECT,shared_from_this(),std::shared_ptr<DataFragment<void>>(nullptr));
+  onDataEvent(EventHandler::EventType::DISCONNECT, sPtrSocket, std::shared_ptr<DataFragment<void>>());
+  sPtrSocket->onDataEvent<void>(EventHandler::EventType::DISCONNECT, shared_from_this(),
+                                std::shared_ptr<DataFragment<void>>(nullptr));
   mListConnectedSocket.erase(it);
 }
 bool Socket::isConnected() { return !mListConnectedSocket.empty(); }
