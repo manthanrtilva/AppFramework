@@ -37,8 +37,9 @@ matrix:
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
         - sudo add-apt-repository ppa:boost-latest/ppa -y
         - sudo apt-get update -y
-        - sudo apt-get install -qq -y gcc-7 g++-7 libboost1.65-dev libboost1.65-all-dev libboost-thread1.65-dev libboost-system1.65-dev libboost-filesystem1.65-dev
+        - sudo apt-get install -y gcc-7 g++-7 libboost-dev libboost-all-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev
         - export CC="gcc-7"
         - export CXX="g++-7"
+        - $CXX --version
         - type cmake
         - mkdir cmake-build && cd cmake-build && cmake --config Debug -DENABLE_TESTS=ON  ../code/ && make -s -j2 && /Core/sample/sample_sinewaverunner ./plugin/ && cd ..
