@@ -15,10 +15,11 @@
 #include <unordered_map>
 
 #include "AppFramework/Core/PropertyException.h"
+#include "AppFramework/Core/Common.h"
 
 namespace AppFramework {
 namespace Core {
-class Property {
+class CLASS_API Property {
 public:
   class EventHandler {
   public:
@@ -28,72 +29,72 @@ public:
   };
   Property();
   ~Property();
-  template <typename type> void setProperty(const std::string &name, const type &value);
-  template <typename type> type getProperty(const std::string &name) const;
+  template <typename NativeType> void setProperty(const std::string &name, const NativeType &value);
+  template <typename NativeType> NativeType getProperty(const std::string &name) const;
   void addPropertyListner(std::shared_ptr<EventHandler> spHandler);
   void removePropertyListner(std::shared_ptr<EventHandler> spHandler);
 
 protected:
-  template <typename type> void addProperty(const std::string &name, const type &value);
-  template <typename type> void removeProperty(const std::string &name);
+  template <typename NativeType> void addProperty(const std::string &name, const NativeType &value);
+  template <typename NativeType> void removeProperty(const std::string &name);
 
 private:
-  template <typename type> void notifyEvent(EventHandler::EventType type, const std::string &name);
+  template <typename NativeType> void notifyEvent(EventHandler::EventType type, const std::string &name);
 
 private:
   std::unordered_map<std::string, std::any> mUMapProperty;
   std::list<std::weak_ptr<EventHandler>> mListEventListner;
 };
-template <typename type> void Property::addProperty(const std::string &name, const type &value) {
-  auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
+template <typename NativeType> void Property::addProperty(const std::string &name, const NativeType &value) {
+  const auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
                           [&name](decltype(mUMapProperty)::const_reference ref) {
-                            if (ref.first.compare(name) == 0 && typeid(type) == ref.second.type())
+                            if (ref.first.compare(name) == 0 && typeid(NativeType) == ref.second.type())
                               return true;
                             return false;
                           });
   if (it != std::end(mUMapProperty)) {
-    throw PropertyAlreadyAdded(name, typeid(type).name());
+    throw PropertyAlreadyAdded(name, typeid(NativeType).name());
   }
   mUMapProperty.emplace(std::make_pair(name, std::any(value)));
-  notifyEvent<type>(EventHandler::EventType::ADDING, name);
+  notifyEvent<NativeType>(EventHandler::EventType::ADDING, name);
 }
-template <typename type> void Property::setProperty(const std::string &name, const type &value) {
-  auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
-                          [&name](decltype(mUMapProperty)::const_reference ref) {
-                            if (ref.first.compare(name) == 0 && typeid(type) == ref.second.type())
+template <typename NativeType> void Property::setProperty(const std::string &name, const NativeType &value) {
+  auto it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
+                          [&name](decltype(mUMapProperty)::reference ref) {
+                            if (ref.first.compare(name) == 0 && typeid(NativeType) == ref.second.type())
                               return true;
                             return false;
                           });
   if (it == std::end(mUMapProperty)) {
-    throw PropertyNotAdded(name, typeid(type).name());
+    throw PropertyNotAdded(name, typeid(NativeType).name());
   }
   it->second = std::any(value);
-  notifyEvent<type>(EventHandler::EventType::UPDATING, name);
+  notifyEvent<NativeType>(EventHandler::EventType::UPDATING, name);
 }
-template <typename type> type Property::getProperty(const std::string &name) const {
-  auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
+template <typename NativeType> NativeType Property::getProperty(const std::string &name) const {
+  const auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
                           [&name](const decltype(mUMapProperty)::const_reference ref) {
-                            if (ref.first.compare(name) == 0 && typeid(type) == ref.second.type())
+                            if (ref.first.compare(name) == 0 && typeid(NativeType) == ref.second.type())
                               return true;
                             return false;
                           });
   if (it == std::end(mUMapProperty)) {
-    throw PropertyNotAdded(name, typeid(type).name());
+    throw PropertyNotAdded(name, typeid(NativeType).name());
   }
-  return std::any_cast<type>(it->second);
+  return std::any_cast<NativeType>(it->second);
 }
-template <typename type> void Property::removeProperty(const std::string &name) {
+template <typename NativeType> void Property::removeProperty(const std::string &name) {
   auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
                           [&name](const decltype(mUMapProperty)::const_reference ref) {
-                            if (ref.first.compare(name) == 0 && typeid(type) == ref.second.type())
+                            if (ref.first.compare(name) == 0 && typeid(NativeType) == ref.second.type())
                               return true;
                             return false;
                           });
   if (it == std::end(mUMapProperty)) {
-    throw PropertyNotAdded(name, typeid(type).name());
+    throw PropertyNotAdded(name, typeid(NativeType).name());
   }
   mUMapProperty.erase(it);
-  notifyEvent<type>(EventHandler::EventType::REMOVING, name);
+  notifyEvent<NativeType>(EventHandler::EventType::REMOVING, name);
 }
 inline void Property::addPropertyListner(std::shared_ptr<EventHandler> spHandler) {
   if (spHandler != nullptr) {
@@ -124,7 +125,7 @@ template <typename NativeType> void Property::notifyEvent(EventHandler::EventTyp
   bool bExpiredPresent{false};
   for (auto &&wListner : mListEventListner) {
     if (wListner.expired() == false) {
-      auto &listner = wListner.lock();
+      auto listner = wListner.lock();
       listner->onPropertyEvent(type, name, typeid(NativeType), *this);
     } else {
       bExpiredPresent = true;

@@ -12,7 +12,7 @@ namespace AppFramework {
 namespace Core {
 Component::Component(const std::string &name) : mStrName{name} {}
 void Component::setState(Component::State oState) {
-  std::cout << __LINE__ << ":" << __FUNC__ <<":"<<mState<<":"<<oState<< std::endl;
+  std::cout << __LINE__ << ":" << __FUNCTION__ <<":"<<mState<<":"<<oState<< std::endl;
   switch (mState) {
     case State::INIT:
       switch (oState) {

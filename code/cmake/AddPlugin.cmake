@@ -6,6 +6,7 @@ macro(AddPlugin name files)
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugin"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/plugin")
   set_target_properties(${name} PROPERTIES SUFFIX ".plug")
+  set_target_properties(${name} PROPERTIES PREFIX  "")
   target_include_directories(${name} PUBLIC ${Core_Inc_DIR})
   target_link_libraries(${name} Core ${Boost_LIBRARIES})
 endmacro(AddPlugin)

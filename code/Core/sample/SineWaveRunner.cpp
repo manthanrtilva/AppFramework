@@ -100,12 +100,12 @@ int main(int argc, char **argv) {
       socket2->connect(socket1);
     }
     comp->setState(Component::State::RUN);
-    std::cout << __LINE__ << ":" << __FUNC__ << std::endl;
+    std::cout << __LINE__ << ":" << __FUNCTION__ << std::endl;
     std::this_thread::sleep_for(
         std::chrono::milliseconds(static_cast<std::int64_t>(comp->getProperty<double>("period")*3)));
-    std::cout << __LINE__ << ":" << __FUNC__ << std::endl;
+    std::cout << __LINE__ << ":" << __FUNCTION__ << std::endl;
     comp->setState(Component::State::STOP);
-    std::cout << __LINE__ << ":" << __FUNC__ << std::endl;
+    std::cout << __LINE__ << ":" << __FUNCTION__ << std::endl;
     if (auto socket2 = wSocket2.lock()) {
       socket2->disconnect(socket1);
     }

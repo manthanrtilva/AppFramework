@@ -2,29 +2,28 @@
 #include "AppFramework/Core/Component.h"
 
 #include <boost/config.hpp>
-#include <boost/dll/alias.hpp>
-
 using AppFramework::Core::Component;
-#define __FUNC__ __FUNCTION__
+// #define __FUNCTION__ __FUNCTION__
 
 class Comp2 : public Component {
 public:
   Comp2(const std::string &str) : Component(str) {
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl;
   }
 
   ~Comp2(){
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl;
   }
 protected:
   virtual void doConfigureImpl() override {
-    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl;
   }
-  virtual void doRunImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl; }
-  virtual void doStopImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl; }
+  virtual void doRunImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl; }
+  virtual void doStopImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl; }
 };
 
-BOOST_DLL_ALIAS(
-    AppFramework::Core::identity(Component::create<Comp2>),
-    create_component
-)
+CREATE_COMPONENT(Comp2)
+// BOOST_DLL_ALIAS(
+//     Component::create<Comp2>,
+//     create_component
+// )

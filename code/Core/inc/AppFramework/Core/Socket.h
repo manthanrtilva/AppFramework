@@ -9,6 +9,7 @@
 
 #include "AppFramework/Core/DataFragment.h"
 #include "AppFramework/Core/SocketException.h"
+#include "AppFramework/Core/Common.h"
 
 #include <any>
 #include <cstdint>
@@ -21,7 +22,7 @@
 namespace AppFramework {
 namespace Core {
 // class Component;
-class Socket : public std::enable_shared_from_this<Socket> {
+class CLASS_API Socket : public std::enable_shared_from_this<Socket> {
 public:
   class EventHandler {
   public:

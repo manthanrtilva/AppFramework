@@ -66,17 +66,17 @@ public:
   }
   template <typename T>
   void addRequired(const std::string &name, const std::string &description) {
-    auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, true, false));
+    auto arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, true, false));
     mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
   }
   template <typename T>
   void addOptional(const std::string &name, const std::string &description) {
-    auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
+    auto arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
     mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
   }
   template <typename T>
   void addDefault(const std::string &name, const std::string &description, const T &value) {
-    auto &arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
+    auto arg = std::unique_ptr<ArgumentWithValue<T>>(new ArgumentWithValue<T>(name, description, false, false));
     arg->oValue = value;
     mMapStrUPtrBase["-" + name] = std::unique_ptr<ArgBase>(std::move(arg));
   }
@@ -94,7 +94,7 @@ public:
   bool run() {
     for (std::size_t index = 0; index < mVecArgumnet.size(); ++index) {
       const auto &arg = mVecArgumnet[index];
-      auto &cmdBase = mMapStrUPtrBase.find(arg);
+      auto cmdBase = mMapStrUPtrBase.find(arg);
       if (cmdBase != std::end(mMapStrUPtrBase)) {
         if (!cmdBase->second->mBHasValue) {
           cmdBase->second->parse("");
@@ -133,7 +133,7 @@ private:
                                     return false;
                                   });
     if (it == std::end(mMapStrUPtrBase)) {
-      auto &arg =
+      auto arg =
           std::unique_ptr<ArgumentWithValue<bool>>(new ArgumentWithValue<bool>("h", "print this help", false, false));
       arg->mOCallback = [this](const std::string &name, const bool &value) {
         usage();

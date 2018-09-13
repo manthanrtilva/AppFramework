@@ -13,12 +13,15 @@
 
 #include "AppFramework/Core/Property.h"
 #include "AppFramework/Core/Socket.h"
+#include "AppFramework/Core/Common.h"
+
+#include <boost/dll/alias.hpp>
 
 #include <iostream>
 
 namespace AppFramework {
 namespace Core {
-class Component : public Property {
+class CLASS_API Component : public Property {
 public:
   enum State { INIT, CONFIGURE, RUN, STOP };
   typedef std::shared_ptr<Component>(component_create_t)(const std::string &);
@@ -28,7 +31,7 @@ public:
   void setState(State oState);
   std::string getName() const;
   std::weak_ptr<Socket> getSocket(const std::string &name, std::uint8_t type, Socket::Direction dir) {
-    auto& sock = mUMapSockets.find(name);
+    const auto& sock = mUMapSockets.find(name);
     if (sock != std::end(mUMapSockets)) {
       if(sock->second->getDataType() == type && sock->second->getDirection() == dir){
         return sock->second;
@@ -75,4 +78,15 @@ F identity(F f) {
 }
 } // namespace Core
 } // namespace AppFramework
+
+#if MSVC
+#define CREATE_COMPONENT(comp) BOOST_DLL_ALIAS(               \
+    AppFramework::Core::identity(Component::create<comp>),   \
+    create_component                                          \
+)
+#else
+#define CREATE_COMPONENT(comp) BOOST_DLL_ALIAS(               \
+    Component::create<comp>, create_component                 \
+)
+#endif
 #endif // AppFramework_Core_Component_h_

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 
+
 namespace AppFramework {
 namespace Core {
 std::shared_ptr<Socket> Socket::create(const std::string &name, std::uint8_t type, Direction dir) {
@@ -17,7 +18,7 @@ std::shared_ptr<Socket> Socket::create(const std::string &name, std::uint8_t typ
 }
 Socket::~Socket() { disconnectAll(); }
 void Socket::connect(std::weak_ptr<Socket> wPtrSocket) {
-  std::cout<<getName()<<":"<<__FUNC__<<std::endl;
+  std::cout<<getName()<<":"<<__FUNCTION__<<std::endl;
   auto sPtrSocket = wPtrSocket.lock();
   if (sPtrSocket == nullptr) {
     throw NullSocket();
@@ -41,7 +42,7 @@ void Socket::connect(std::weak_ptr<Socket> wPtrSocket) {
     throw SocketAlreadyConnected();
   }
   mListConnectedSocket.push_back(wPtrSocket);
-  std::cout<<getName()<<":"<<__FUNC__<<std::endl;
+  std::cout<<getName()<<":"<<__FUNCTION__<<std::endl;
   // onDataEvent(EventHandler::EventType::CONNECT, sPtrSocket, std::shared_ptr<DataFragment<void>>());
   sPtrSocket->onDataEvent<void>(EventHandler::EventType::CONNECT, shared_from_this(),
                                 std::shared_ptr<DataFragment<void>>(nullptr));

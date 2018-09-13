@@ -3,7 +3,7 @@
 #include "AppFramework/Core/Component.h"
 
 #include <string>
-#define __FUNC__ __FUNCTION__
+// #define __FUNCTION__ __FUNCTION__
 int main(int argc, char const *argv[]) {
   using AppFramework::Core::Component;
   class Comp1 : public Component {
@@ -12,10 +12,10 @@ int main(int argc, char const *argv[]) {
 
   protected:
     virtual void doConfigureImpl() override {
-      std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl;
+      std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl;
     }
-    virtual void doRunImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl; }
-    virtual void doStopImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNC__ << std::endl; }
+    virtual void doRunImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl; }
+    virtual void doStopImpl() override { std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl; }
   };
   std::string str;
   class cc {
