@@ -18,12 +18,9 @@ before_install:
 branches:
   only:
   - master
+  - development
 
 sudo: enabled
-
-addons:
-  postgresql: "9.4"
-
 
 notifications:
     email:
@@ -38,7 +35,7 @@ matrix:
       compiler: gcc
       script:
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        - sudo add-apt-repository ppa:boost-latest/ppa
+        - sudo add-apt-repository ppa:boost-latest/ppa -y
         - sudo apt-get update -y
         - sudo apt-get install -qq -y gcc-7 g++-7 libboost1.65-dev libboost1.65-all-dev libboost-thread1.65-dev libboost-system1.65-dev libboost-filesystem1.65-dev
         - export CC="gcc-7"
