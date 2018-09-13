@@ -1,0 +1,44 @@
+language: cpp
+
+cache:
+  - apt
+
+branches:
+  except:
+    - /.*pp.eyor.*/
+    - /.*Merge.*/
+
+git:
+  submodules: false
+
+before_install:
+  - git submodule update --init --recursive --remote
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update  -qq; fi
+
+branches:
+  only:
+  - master
+
+sudo: enabled
+
+addons:
+  postgresql: "9.4"
+
+
+notifications:
+    email:
+      on_success: always # default: change
+      on_failure: always # default: always
+
+matrix:
+  fast_finish: true
+
+  include:
+    - env:    test="7.3 x64 (CMake)"
+      compiler: gcc
+      script:
+        - sudo apt-get install -qq -y gcc-7.3 g++-7.3 libboost1.65-dev libboost1.65-all-dev libboost-thread1.65-dev libboost-system1.65-dev libboost-filesystem1.65-dev
+        - export CC="gcc-7.3"
+        - export CXX="g++-7.3"
+        - type cmake
+        - mkdir cmake-build && cd cmake-build && cmake --config Debug -DENABLE_TESTS=ON  ../code/ && make -s -j2 && /Core/sample/sample_sinewaverunner ./plugin/ && cd ..
