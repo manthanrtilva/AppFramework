@@ -37,6 +37,8 @@ matrix:
     - env:    test="7.3 x64 (CMake)"
       compiler: gcc
       script:
+        - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        - sudo apt-get update -y
         - sudo apt-get install -qq -y gcc-7.3 g++-7.3 libboost1.65-dev libboost1.65-all-dev libboost-thread1.65-dev libboost-system1.65-dev libboost-filesystem1.65-dev
         - export CC="gcc-7.3"
         - export CXX="g++-7.3"
