@@ -38,9 +38,10 @@ matrix:
       compiler: gcc
       script:
         - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        - sudo add-apt-repository ppa:boost-latest/ppa
         - sudo apt-get update -y
-        - sudo apt-get install -qq -y gcc-7.3 g++-7.3 libboost1.65-dev libboost1.65-all-dev libboost-thread1.65-dev libboost-system1.65-dev libboost-filesystem1.65-dev
-        - export CC="gcc-7.3"
-        - export CXX="g++-7.3"
+        - sudo apt-get install -qq -y gcc-7 g++-7 libboost1.65-dev libboost1.65-all-dev libboost-thread1.65-dev libboost-system1.65-dev libboost-filesystem1.65-dev
+        - export CC="gcc-7"
+        - export CXX="g++-7"
         - type cmake
         - mkdir cmake-build && cd cmake-build && cmake --config Debug -DENABLE_TESTS=ON  ../code/ && make -s -j2 && /Core/sample/sample_sinewaverunner ./plugin/ && cd ..
