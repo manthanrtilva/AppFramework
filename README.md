@@ -1,5 +1,6 @@
-# How to build 
-
+[![Travis Build master ](https://travis-ci.org/manthanrtilva/AppFramework.svg?branch=master)](https://travis-ci.org/manthanrtilva/AppFramework)
+[![Travis Build development ](https://travis-ci.org/manthanrtilva/AppFramework.svg?branch=development)](https://travis-ci.org/manthanrtilva/AppFramework)
+# How to build
 ```
 git clone https://github.com/manthanrtilva/AppFramework.git
 git submodule init
