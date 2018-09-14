@@ -9,5 +9,3 @@ RUN apt -y install gcc g++ cmake libboost-dev libboost-system-dev libboost-files
 RUN gcc --version
 
 RUN g++ --version
-
-RUN mkdir /tmp/build/ && cd /tmp/build/ && cmake -DENABLE_TESTS=ON /mnt/AppFramework/code/ && make -j3 && ./Core/sample/sample_sinewaverunner ./plugin/
