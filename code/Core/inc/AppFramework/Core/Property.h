@@ -84,7 +84,7 @@ template <typename NativeType> NativeType Property::getProperty(const std::strin
   return std::any_cast<NativeType>(it->second);
 }
 template <typename NativeType> void Property::removeProperty(const std::string &name) {
-  auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
+  const auto &it = std::find_if(std::begin(mUMapProperty), std::end(mUMapProperty),
                           [&name](const decltype(mUMapProperty)::const_reference ref) {
                             if (ref.first.compare(name) == 0 && typeid(NativeType) == ref.second.type())
                               return true;

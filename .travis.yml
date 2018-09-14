@@ -3,10 +3,8 @@ language: cpp
 cache:
   - apt
 
-branches:
-  except:
-    - /.*pp.eyor.*/
-    - /.*Merge.*/
+services:
+  - docker
 
 git:
   submodules: false
@@ -14,6 +12,9 @@ git:
 before_install:
   - git submodule update --init --recursive --remote
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update  -qq; fi
+  - docker build -t ubuntu18.04dev .
+  - docker run -v $PWD/:/mnt/AppFramework ubuntu18.04dev:latest /bin/bash -c  "mkdir /tmp/build/ && cd /tmp/build/ ; cmake -DENABLE_TESTS=ON /mnt/AppFramework/code/ && make -j3 && ./Core/sample/sample_sinewaverunner ./plugin/ ;"
+
 
 branches:
   only:
@@ -26,20 +27,3 @@ notifications:
     email:
       on_success: always # default: change
       on_failure: always # default: always
-
-matrix:
-  fast_finish: true
-
-  include:
-    - env:    test="7.3 x64 (CMake)"
-      compiler: gcc
-      script:
-        - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        - sudo add-apt-repository ppa:boost-latest/ppa -y
-        - sudo apt-get update -y
-        - sudo apt-get install -y gcc-7 g++-7 libboost-dev libboost-all-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev
-        - export CC="gcc-7"
-        - export CXX="g++-7"
-        - $CXX --version
-        - type cmake
-        - mkdir cmake-build && cd cmake-build && cmake --config Debug -DENABLE_TESTS=ON  ../code/ && make -s -j2 && /Core/sample/sample_sinewaverunner ./plugin/ && cd ..

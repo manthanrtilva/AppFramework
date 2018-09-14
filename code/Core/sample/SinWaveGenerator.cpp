@@ -23,7 +23,7 @@ public:
 
 protected:
   virtual void doConfigureImpl() override {
-    std::cout << __LINE__ << ":" << __FUNCTION__ << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << std::endl;
     mUint32PollInterval = getProperty<std::uint32_t>("pollInterval");
     mMetaData.mMaxValue = getProperty<double>("maxValue");
     mMetaData.mMinValue = getProperty<double>("minValue");
@@ -40,7 +40,7 @@ protected:
       pSPtr->sendData<MetaData>(metaDataFrag);
     }
     auto sinDataFrag = AppFramework::Core::DataFragment<double>::create();
-    AppFramework::Core::identity(Component::create<SinWaveGenerator>);
+    // AppFramework::Core::identity(Component::create<SinWaveGenerator>);
     while (getState() == Component::State::RUN) {
       auto t = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
       mFCurrentValue = mFMidPoint + mFHalfHeight * std::sin(mFMultiplier * t);
